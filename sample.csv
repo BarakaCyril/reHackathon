@@ -1,0 +1,11 @@
+PolicyID,Location,SumInsured,Premium,ClaimsPaid,Construction,YearBuilt,Occupancy
+001,Nairobi,500000,5000,20000,Concrete,2005,Residential
+002,Mombasa,1200000,9000,0,Timber,1998,Commercial
+003,Kisumu,300000,2500,10000,Masonry,2010,Residential
+004,Eldoret,800000,6000,5000,Concrete,2015,Industrial
+005,Nakuru,450000,4000,15000,Timber,2000,Residential
+006,Naivasha,700000,7000,0,Concrete,2018,Hospital
+007,Thika,1500000,12000,25000,Masonry,2003,Commercial
+008,Kericho,350000,3000,0,Timber,1995,Residential
+009,Garissa,200000,1800,5000,Mud,1990,Residential
+010,Malindi,950000,8500,10000,Concrete,2008,Hotel

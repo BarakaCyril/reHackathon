@@ -4,10 +4,35 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite App</title>
+    <title>ReMatch</title>
+    <link rel="stylesheet" href="src/style.css">
   </head>
   <body>
-    <div id="app"></div>
+    
+    <nav class="navbar">
+      <h1>AI Reinsurance Portal</h1>
+    </nav>
+
+    <main class="container">
+
+      <section class="upload-section">
+        <h2>Upload Portfolio CSV</h2>
+        <div class="input-field">
+          <input type="file" id="fileInput" accept=".csv">
+          <button id="uploadBtn">Upload</button>
+        </div>
+
+      </section>
+
+      <section class="results-section">
+        <h2>Analysis Results</h2>
+        <div id="results">
+          <p>No data uploaded yet.</p>
+        </div>
+      </section>
+
+    </main>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

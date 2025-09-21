@@ -1,24 +1,16 @@
-import './style.css'
-import javascriptLogo from './javascript.svg'
-import viteLogo from '/vite.svg'
-import { setupCounter } from './counter.js'
 
-document.querySelector('#app').innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${viteLogo}" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank">
-      <img src="${javascriptLogo}" class="logo vanilla" alt="JavaScript logo" />
-    </a>
-    <h1>Hello Vite!</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite logo to learn more
-    </p>
-  </div>
-`
+const uploadButton = document.getElementById("uploadBtn");
 
-setupCounter(document.querySelector('#counter'))
+uploadButton.addEventListener("click", ()=>{
+  const fileInput = document.getElementById("fileInput");
+  const resultsDiv = document.getElementById("results");
+
+  if (fileInput.files.length === 0) {
+    resultsDiv.innerHTML = "<p style='color:red;'>Please select a CSV file first.</p>";
+    return;
+  }
+
+  const fileName = fileInput.files[0].name;
+  resultsDiv.innerHTML = `<p>✅ File <strong>${fileName}</strong> uploaded successfully! (Processing coming soon...)</p>`;
+
+});
