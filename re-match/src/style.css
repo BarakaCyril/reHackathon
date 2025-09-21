@@ -71,6 +71,12 @@ h1 {
   margin-bottom: 2rem;
 }
 
+.upload-section{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
 
 button {
   background: var(--red);
@@ -96,15 +102,29 @@ button:hover {
   border-radius: 2rem;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+table {
+  width: 100%;
+  border-collapse: collapse; /* removes double borders */
+  margin-top: 1rem;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
 }
+
+thead {
+  background-color: var(--red);
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+tr:nth-child(even) {
+  background-color: #fafafa; /* zebra striping */
+}
+
+th {
+  font-weight: bold;
+}
+
