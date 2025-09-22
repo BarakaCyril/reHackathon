@@ -11,6 +11,7 @@
   --dark-red: #9b0e31;
   --white: #f9fafb;
   --text: #333;
+  --gray: #7e7e7e;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -111,7 +112,7 @@ table {
 }
 
 thead {
-  background-color: var(--red);
+  background-color: var(--gray);
 }
 
 th, td {
@@ -126,5 +127,34 @@ tr:nth-child(even) {
 
 th {
   font-weight: bold;
+}
+
+.styled-table {
+  border-collapse: collapse;
+  margin: 20px 0;
+  font-size: 14px;
+  font-family: Arial, sans-serif;
+  width: 100%;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.styled-table th, .styled-table td {
+  border: 0.5px solid var(--text);
+  padding: 8px;
+  text-align: center;
+}
+
+.styled-table th {
+  background-color: var(--red);
+  color: var(--text);
+  font-weight: bold;
+}
+
+.styled-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.styled-table tr:hover {
+  background-color: #ddd;
 }
 

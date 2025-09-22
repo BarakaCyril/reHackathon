@@ -30,12 +30,25 @@
           <p>No data uploaded yet.</p>
         </div>
         <div id="output"></div>
+      </section>
 
-        
+      <section>
+        <div id="summaryContainer"></div>
+        <div class="charts-container">
+          <h3>Category Distribution</h3>
+          <canvas id="categoryChart"></canvas>
+
+          <h3>Capacity Flags</h3>
+          <canvas id="capacityChart"></canvas>
+
+          <h3>Claim Probability Distribution</h3>
+          <canvas id="claimProbChart"></canvas>
+      </div>
       </section>
 
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

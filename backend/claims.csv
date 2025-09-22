@@ -1,0 +1,4 @@
+policy_id,location,yearBuilt,Constructon,SumInsured,claim_occurred,previous_claims
+POL001,California,1995,Wood Frame,500000,1,0
+POL002,Texas,2010,Brick,750000,0,1
+POL003,Florida,1980,Mobile Home,200000,1,2

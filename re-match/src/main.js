@@ -11,13 +11,12 @@ function displayTable(data){
     tableContainer.innerHTML = "<p>No data found.</p>";
     return;
   }
-
+  
   const table = document.createElement("table");
   //HEADERS
     const headers = Object.keys(data[0]); //extract keys in first row in the data i.e ID, Premiums
     const thead = document.createElement("thead"); // creates a table header section
     const headerRow = document.createElement("tr"); //first row inside the header
-    headers.push("AI risk score");
 
     //loop through the keys in data to create table headers and append them in the first row
     headers.forEach((h) => {
@@ -37,12 +36,7 @@ function displayTable(data){
       //looping through the values in the header and not the actual header
       headers.forEach((h)=>{
         const td = document.createElement("td");
-
-        if (h === "AI risk score"){
-          td.textContent = "Medium"; //This is where the AI functionality will go
-        }else{
-          td.textContent = row[h];
-        }
+        td.textContent = row[h];
         tr.appendChild(td);
       });
       tableBody.appendChild(tr);
@@ -52,6 +46,45 @@ function displayTable(data){
   tableContainer.appendChild(table);
 }
 
+function renderCharts(summary){
+  const categoryLabels = summary.charts.category_pie.map(item => item.label);
+  const categoryValues = summary.charts.category_pie.map(item => item.value);
+}
+
+function displaySummary(summary){
+  const summaryContainer = document.getElementById("summaryContainer");
+  summaryContainer.innerHTML = ""; //clear old
+
+  if (!summary) {
+    summaryContainer.innerHTML = "<p>No portfolio summary available.</p>";
+    return;
+  }
+
+  const {
+    totalPolicies,
+    avgRiskScore,
+    avgClaimProbability,
+    totalExpectedLoss,
+    categoryDistribution,
+    capacityFlags
+  } = summary;
+
+
+  summaryContainer.innerHTML = `
+  <h3>POTFOLIO SUMMARY</h3>
+  <ul>
+    <li><strong>Total Policies:</strong> ${totalPolicies}</li>
+    <li><strong>Average Risk Score:</strong> ${(avgRiskScore * 100).toFixed(1)}%</li>
+    <li><strong>Average Claim Probability:</strong> ${(avgClaimProbability * 100).toFixed(1)}%</li>
+    <li><strong>Total Expected Loss:</strong> ${totalExpectedLoss.toLocaleString()}</li>
+    <li><strong>Category Disctribution:</strong> ${JSON.stringify(categoryDistribution, null, 2)}</li>
+    <li><strong>Capacity Flags:</strong> ${JSON.stringify(capacityFlags, null, 2)}</li>
+  </ul>
+  <div id="chartsContainer" style="margin-top:20px;"></div>
+  `
+}
+
+//get data from backend when you click upload button
 uploadButton.addEventListener("click", async ()=>{
   const fileInput = document.getElementById("fileInput");
   const resultsDiv = document.getElementById("results");
@@ -68,6 +101,17 @@ uploadButton.addEventListener("click", async ()=>{
   const formData = new FormData();
   formData.append('file', file);
 
+  //Display the table before AI calculations
+  Papa.parse(file, {
+    header: true,
+    dynamicTyping: true,
+    complete: function(results) {
+      console.log("Parsed CSV:", results.data);
+      displayTable(results.data);
+    }
+  });
+
+  //Fetch data from backend that includes AI manipulated table
   try{
     const response = await fetch("http://127.0.0.1:8000/upload-csv/", {
       method: "POST",
@@ -76,25 +120,72 @@ uploadButton.addEventListener("click", async ()=>{
 
     const result = await response.json();
     console.log("Backend response:", result);
+    const {columns, rows}  = result;
 
-    resultsDiv.innerHTML = `
-      <p> File <strong>${fileName}</strong> uploaded successfully!</p>
-      <h3>Columns:</h3> <pre>${JSON.stringify(result.columns, null, 2)}</pre>
-      <h3>Sample Rows:</h3> <pre>${JSON.stringify(result.rows, null, 2)}</pre>
-    `
+    const table = document.createElement("table");
+    table.classList.add("styled-table");
+  
+    const thead = document.createElement("thead");
+    const headerRow = document.createElement("tr");
+
+    const prettyNames = {
+      PolicyID: "Policy ID",
+      Location: "Location",
+      SumInsured: "Sum Insured",
+      Premium: "Premium",
+      ClaimsPaid: "Claims Paid",
+      Construction: "Construction",
+      YearBuilt: "Year Built",
+      Occupancy: "Occupancy",
+      predicted_risk: "Predicted Risk",
+      category: "Risk Category",
+      claim_probability: "Claim Probability",
+      expected_loss: "Expected Loss",
+      capacity_flag: "Capacity Flag"
+    };
+
+    columns.forEach((col)=> {
+      const th = document.createElement("th");
+      th.textContent = prettyNames[col] || col;
+      headerRow.appendChild(th);
+    })
+    
+
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+
+    //TABLE BODY
+    const tbody = document.createElement("tbody");
+    rows.forEach((row) => {
+      const tr = document.createElement("tr");
+      columns.forEach((col)=>{
+        const td = document.createElement("td");
+
+        //Format the numbers nicely
+        if (typeof row[col] === "number") {
+          if (col === "predicted_risk" || col === "claim_probability") {
+            td.textContent = (row[col] * 100).toFixed(1) + "%"; // convert to %
+          } else if (col === "expected_loss" || col === "SumInsured" || col === "Premium" || col === "ClaimsPaid") {
+            td.textContent = row[col].toLocaleString(); // add commas
+          } else {
+            td.textContent = row[col];
+          }
+        } else {
+          td.textContent = row[col];
+        }
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    tableContainer.appendChild(table);
+
+  displaySummary(result.summary)
 
   }catch(error){
     console.error("Upload error", error);
     resultsDiv.innerHTML = `<p style='color:red;'>Error uploading file.</p>`;
   }
-
-  Papa.parse(file, {
-    header: true,
-    dynamicTyping: true,
-    complete: function(results) {
-      console.log("Parsed CSV:", results.data);
-      displayTable(results.data);
-    }
-  })
 
 });
