@@ -49,6 +49,52 @@ function displayTable(data){
 function renderCharts(summary){
   const categoryLabels = summary.charts.category_pie.map(item => item.label);
   const categoryValues = summary.charts.category_pie.map(item => item.value);
+
+  new Chart(document.getElementById("categoryChart"), {
+    type: "pie",
+    data: {
+      labels: categoryLabels,
+      datasets: [{
+        data: categoryValues,
+        backgroundColor: ["#4caf50", "#ff9800", "#f44336"] // colors for Low/Med/High
+      }]
+    }
+  })
+
+  //CAPACITY BAR CHART
+  const capacityLabels = summary.charts.capacity_bar.map(item => item.label);
+  const capacityValues = summary.charts.capacity_bar.map(item => item.value);
+
+  new Chart(document.getElementById("capacityChart"), {
+    type: "bar",
+    data: {
+      labels: capacityLabels,
+      datasets: [{
+        label: "Count",
+        data: capacityValues,
+        backgroundColor: "#2196f3"
+      }]
+    },
+    options: { scales: { y: { beginAtZero: true } } }
+  });
+  
+  //CLAIM PROBABILTY LINE CHART
+  const probLabels = summary.charts.claim_prob_line.map(item => item.range);
+  const probValues = summary.charts.claim_prob_line.map(item => item.count);
+
+  new Chart(document.getElementById("claimProbChart"), {
+      type: "line",
+      data: {
+        labels: probLabels,
+        datasets: [{
+          label: "Policies",
+          data: probValues,
+          fill: false,
+          borderColor: "#9c27b0",
+          tension: 0.3
+        }]
+      }
+    });
 }
 
 function displaySummary(summary){
@@ -181,7 +227,8 @@ uploadButton.addEventListener("click", async ()=>{
     table.appendChild(tbody);
     tableContainer.appendChild(table);
 
-  displaySummary(result.summary)
+  displaySummary(result.summary);
+  renderCharts(result.summary);
 
   }catch(error){
     console.error("Upload error", error);
