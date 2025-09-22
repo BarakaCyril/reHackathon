@@ -63,7 +63,7 @@ uploadButton.addEventListener("click", async ()=>{
 
   const file = fileInput.files[0];
   const fileName = fileInput.files[0].name;
-  resultsDiv.innerHTML = `<p>✅ File <strong>${fileName}</strong> uploaded successfully!</p>`;
+  resultsDiv.innerHTML = `<p> File <strong>${fileName}</strong> uploaded successfully!</p>`;
  
   const formData = new FormData();
   formData.append('file', file);
@@ -78,14 +78,14 @@ uploadButton.addEventListener("click", async ()=>{
     console.log("Backend response:", result);
 
     resultsDiv.innerHTML = `
-      <p>✅ File <strong>${fileName}</strong> uploaded successfully!</p>
+      <p> File <strong>${fileName}</strong> uploaded successfully!</p>
       <h3>Columns:</h3> <pre>${JSON.stringify(result.columns, null, 2)}</pre>
       <h3>Sample Rows:</h3> <pre>${JSON.stringify(result.rows, null, 2)}</pre>
     `
 
   }catch(error){
     console.error("Upload error", error);
-    resultsDiv.innerHTML = `<p style='color:red;'>❌ Error uploading file.</p>`;
+    resultsDiv.innerHTML = `<p style='color:red;'>Error uploading file.</p>`;
   }
 
   Papa.parse(file, {
