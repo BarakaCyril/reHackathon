@@ -6,16 +6,13 @@ import joblib
 import logging
 import numpy as np
 
-#setup logging for erro handling
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+portfolio_df = None
 
 app = FastAPI(
     title="Insurance Risk Assessment API",
     description="Comprehensive ML-powered insurance risk analysis system",
     version="1.0.0"
 )
-
 
 model = joblib.load("risk_model.pkl")
 
@@ -112,13 +109,65 @@ def portfolio_summary(df: pd.DataFrame) -> dict:
         }
     }
 
+class AdjustmentRequest(BaseModel):
+    adjustments: dict #we are expecting a dictionary adjustment
+
+    #columns - keys
+    #values - mapping conditions
+
 #ENDPOINTS
 #-------------------------
+@app.post("/scenario-test/")
+def scenario_test(request: AdjustmentRequest):
+
+    global portfolio_df
+    if portfolio_df is None:
+        return {"error": "No portfolio uploaded yet."}
+
+    dataFrame = portfolio_df.copy()
+
+    adjusted_df = dataFrame.copy()
+    for column, rules in request.adjustments.items(): #loops through columns and its rules
+        for key, change in rules.items(): #loops through the keys and unit change 
+            if column not in dataFrame:
+                continue
+            
+        if column == "YearBuilt" and key.startswith("<"):
+            year = int(key[1:])
+            mask = dataFrame[column] < year
+        elif column == "YearBuilt" and key.startswith(">"):
+            year = int(key[1:])
+            mask = dataFrame[column] > year
+        elif column == "YearBuilt":
+            year = int(key)
+            mask = dataFrame[column] == year
+        else:
+            mask = dataFrame[column] == key
+            #Apply increase in risk probability
+            adjusted_df.loc[mask, "claim_probability"] *= (1 + change)
+    #clip between 0-1
+    adjusted_df["claim_probability"] = adjusted_df["claim_probability"].clip(0, 1)
+
+    # Recompute expected loss
+    adjusted_df["expected_loss"] = (
+        adjusted_df["claim_probability"] * adjusted_df["SumInsured"]
+    )
+
+    # Use your existing portfolio_summary function
+    summary = portfolio_summary(adjusted_df)
+
+    return {
+        "baseline": portfolio_summary(dataFrame), #original
+        "scenario": summary #with adjustments
+    }
+
 
 @app.post("/upload-csv/")
 async def upload_csv(file: UploadFile = File(...)):
 
     dataFrame = pd.read_csv(file.file) #An instance for storing data
+    global portfolio_df
+    
 
     dataFrameEncoded = pd.get_dummies(dataFrame)
     dataFrameEncoded = dataFrameEncoded.reindex(columns=training_columns, fill_value=0)
@@ -135,7 +184,8 @@ async def upload_csv(file: UploadFile = File(...)):
         dataFrame[key] = [r[key] for r in results]
     
     summary = portfolio_summary(dataFrame)
-
+    portfolio_df = dataFrame.copy() #A copy to use in what-if situations
+    
     return {
         "columns": dataFrame.columns.tolist(),
         "rows": dataFrame.to_dict(orient="records"),

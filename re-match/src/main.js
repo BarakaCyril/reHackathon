@@ -46,11 +46,20 @@ function displayTable(data){
   tableContainer.appendChild(table);
 }
 
+let categoryChartInstance;
+let capacityChartInstance;
+let claimProbChartInstance;
+
 function renderCharts(summary){
+    // Destroy old charts if they exist (prevents duplicates)
+  if (categoryChartInstance) categoryChartInstance.destroy();
+  if (capacityChartInstance) capacityChartInstance.destroy();
+  if (claimProbChartInstance) claimProbChartInstance.destroy();
+
   const categoryLabels = summary.charts.category_pie.map(item => item.label);
   const categoryValues = summary.charts.category_pie.map(item => item.value);
 
-  new Chart(document.getElementById("categoryChart"), {
+  categoryChartInstance = new Chart(document.getElementById("categoryChart"), {
     type: "pie",
     data: {
       labels: categoryLabels,
@@ -65,7 +74,7 @@ function renderCharts(summary){
   const capacityLabels = summary.charts.capacity_bar.map(item => item.label);
   const capacityValues = summary.charts.capacity_bar.map(item => item.value);
 
-  new Chart(document.getElementById("capacityChart"), {
+  capacityChartInstance = new Chart(document.getElementById("capacityChart"), {
     type: "bar",
     data: {
       labels: capacityLabels,
@@ -82,7 +91,7 @@ function renderCharts(summary){
   const probLabels = summary.charts.claim_prob_line.map(item => item.range);
   const probValues = summary.charts.claim_prob_line.map(item => item.count);
 
-  new Chart(document.getElementById("claimProbChart"), {
+  claimProbChartInstance = new Chart(document.getElementById("claimProbChart"), {
       type: "line",
       data: {
         labels: probLabels,
@@ -96,6 +105,20 @@ function renderCharts(summary){
       }
     });
 }
+
+//function for running scenarios through the backend endpoint
+async function runScenario(adjustments) {
+  const res = await fetch("http://localhost:8000/scenario-test/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ adjustments })
+  });
+  const result = await res.json();
+
+  // Display comparison
+  displayScenarioComparison(result.baseline, result.scenario);
+}
+
 
 function displaySummary(summary){
   const summaryContainer = document.getElementById("summaryContainer");
@@ -126,7 +149,6 @@ function displaySummary(summary){
     <li><strong>Category Disctribution:</strong> ${JSON.stringify(categoryDistribution, null, 2)}</li>
     <li><strong>Capacity Flags:</strong> ${JSON.stringify(capacityFlags, null, 2)}</li>
   </ul>
-  <div id="chartsContainer" style="margin-top:20px;"></div>
   `
 }
 
@@ -233,6 +255,91 @@ uploadButton.addEventListener("click", async ()=>{
   }catch(error){
     console.error("Upload error", error);
     resultsDiv.innerHTML = `<p style='color:red;'>Error uploading file.</p>`;
+  }
+
+});
+
+
+function displayScenarioComparison(baseline, scenario){
+  scenarioResults.innerHTML = `
+      <h3>Scenario Comparison</h3>
+      <table class="styled-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Baseline</th>
+            <th>Scenario</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Total Policies</td>
+            <td>${baseline.totalPolicies}</td>
+            <td>${scenario.totalPolicies}</td>
+          </tr>
+          <tr>
+            <td>Average Risk Score</td>
+            <td>${(baseline.avgRiskScore * 100).toFixed(1)}%</td>
+            <td>${(scenario.avgRiskScore * 100).toFixed(1)}%</td>
+          </tr>
+          <tr>
+            <td>Average Claim Probability</td>
+            <td>${(baseline.avgClaimProbability * 100).toFixed(1)}%</td>
+            <td>${(scenario.avgClaimProbability * 100).toFixed(1)}%</td>
+          </tr>
+          <tr>
+            <td>Total Expected Loss</td>
+            <td>${baseline.totalExpectedLoss.toLocaleString()}</td>
+            <td>${scenario.totalExpectedLoss.toLocaleString()}</td>
+          </tr>
+        </tbody>
+      </table>  
+  `;
+}
+
+const scenarioForm = document.getElementById("scenarioForm");
+const scenarioResults = document.getElementById("scenarioResults");
+
+scenarioForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+    
+  const column = document.getElementById("columnSelect").value;
+  const condition = document.getElementById("conditionInput").value;
+  const changePercent = parseFloat(document.getElementById("changeInput").value);
+
+  if (!condition || isNaN(changePercent)) {
+    scenarioResults.innerHTML = "<p style='color:red;'>Please enter valid condition and % change.</p>";
+    return;
+  }
+
+  const changeDecimal = changePercent / 100;
+
+  //build adjustment object
+  const adjustments = {
+    [column]: {
+      [condition]: changeDecimal
+    }
+  };
+
+  try{
+  
+    const res = await fetch("http://localhost:8000/scenario-test/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ adjustments })
+    });
+
+    const result = await res.json();
+    if (result){
+      console.log("WHAT IF RESULTS", result);
+    }
+    displayScenarioComparison(result.baseline, result.scenario);
+
+
+
+  }catch(error){
+    console.log("failed to run adjustments", error);
+    scenarioResults.innerHTML = "<p style='color:red;'>Error running scenario.</p>";
   }
 
 });

@@ -35,15 +35,46 @@
       <section>
         <div id="summaryContainer"></div>
         <div class="charts-container">
-          <h3>Category Distribution</h3>
-          <canvas id="categoryChart"></canvas>
+            <h3>Category Distribution</h3>
+            <canvas id="categoryChart"></canvas>
 
-          <h3>Capacity Flags</h3>
-          <canvas id="capacityChart"></canvas>
+            <h3>Capacity Flags</h3>
+            <canvas id="capacityChart"></canvas>
 
-          <h3>Claim Probability Distribution</h3>
-          <canvas id="claimProbChart"></canvas>
-      </div>
+            <h3>Claim Probability Distribution</h3>
+            <canvas id="claimProbChart"></canvas>
+        </div>
+      </section>
+
+      <section class="scenario-section">
+        <h2>Scenario Testing</h2>
+        <form id="scenarioForm">
+
+          <div>
+            <label for="columnSelect">Column:</label>
+            <select id="columnSelect">
+              <option value="YearBuilt">Year Built</option>
+              <option value="SumInsured">Sum Insured</option>
+              <option value="Construction">Construction</option>
+              <!-- Add more based on your CSV columns -->
+            </select>
+          </div>
+
+          <div>
+            <label for="conditionInput">Condition:</label>
+            <input type="text" id="conditionInput" placeholder="e.g. <2000">
+          </div>
+
+          <div>
+            <label for="changeInput">Change (%):</label>
+            <input type="number" id="changeInput" placeholder="e.g. 20">
+          </div>
+          
+          <button type="submit">Run Scenario</button>
+        </form>
+        <div class="scenario-results" id="scenarioResults">
+
+        </div>
       </section>
 
     </main>
